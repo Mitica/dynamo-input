@@ -16,7 +16,7 @@ export function queryInput(params: QueryParams): DynamoDB.QueryInput {
     }
 
     if (params.startKey) {
-        input.ExclusiveStartKey = DynamoDB.Converter.marshall(params.startKey);
+        input.ExclusiveStartKey = params.startKey;
     }
 
     const ExpressionAttributeNames: DynamoDB.ExpressionAttributeNameMap = {};
@@ -65,7 +65,7 @@ export function queryInput(params: QueryParams): DynamoDB.QueryInput {
     }
 
     input.ExpressionAttributeNames = ExpressionAttributeNames;
-    input.ExpressionAttributeValues = DynamoDB.Converter.marshall(ExpressionAttributeValues);
+    input.ExpressionAttributeValues = ExpressionAttributeValues;
     input.KeyConditionExpression = KeyConditionExpression;
 
     return input;

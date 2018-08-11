@@ -24,9 +24,9 @@ test('putItemInput', t => {
     let input = putItemInput(params);
 
     t.is(input.TableName, params.tableName);
-    t.is(input.Item['id'].N, params.item.id.toString());
-    t.is(input.Item['year'].N, params.item.year.toString());
-    t.is(input.Item['title'].S, params.item.title);
+    t.is(input.Item['id'], params.item.id);
+    t.is(input.Item['year'], params.item.year);
+    t.is(input.Item['title'], params.item.title);
 });
 
 test('getItemInput', t => {
@@ -41,7 +41,7 @@ test('getItemInput', t => {
     let input = getItemInput(params);
 
     t.is(input.TableName, params.tableName);
-    t.is(input.Key['id'].N, params.key.id.toString());
+    t.is(input.Key['id'], params.key.id as any);
     params.attributes && t.is(input.ProjectionExpression, params.attributes.join(','));
     t.is(input.AttributesToGet, undefined);
     t.is(input.ReturnConsumedCapacity, undefined);
@@ -65,8 +65,8 @@ test('batchGetItemInput', t => {
     t.is(RequestItemsKeys.length, 1);
     t.is(RequestItemsKeys[0], params.tableName);
     t.is(input.RequestItems[params.tableName].Keys.length, 2);
-    t.is(input.RequestItems[params.tableName].Keys[0]['id'].N, params.keys[0].id.toString());
-    t.is(input.RequestItems[params.tableName].Keys[1]['id'].N, params.keys[1].id.toString());
+    t.is(input.RequestItems[params.tableName].Keys[0]['id'], params.keys[0].id as any);
+    t.is(input.RequestItems[params.tableName].Keys[1]['id'], params.keys[1].id as any);
     params.attributes && t.is(input.RequestItems[params.tableName].ProjectionExpression, params.attributes.join(','));
     t.is(input.RequestItems[params.tableName].AttributesToGet, undefined);
     t.is(input.ReturnConsumedCapacity, undefined);
@@ -83,6 +83,6 @@ test('deleteItemInput', t => {
     let input = deleteItemInput(params);
 
     t.is(input.TableName, params.tableName);
-    t.is(input.Key['id'].N, params.key.id.toString());
+    t.is(input.Key['id'], params.key.id as any);
     t.is(input.ReturnValues, undefined);
 });

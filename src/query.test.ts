@@ -30,7 +30,7 @@ test('simple queryInput', t => {
         t.is(input.ExpressionAttributeNames[`#${params.hashKey.name}`], params.hashKey.name);
     }
     if (input.ExpressionAttributeValues) {
-        t.is(input.ExpressionAttributeValues[`:${params.hashKey.name}`].N, params.hashKey.value.toString());
+        t.is(input.ExpressionAttributeValues[`:${params.hashKey.name}`], params.hashKey.value as any);
     }
 });
 
@@ -75,13 +75,13 @@ test('rangeKey queryInput', t => {
 
     t.truthy(input.ExpressionAttributeValues);
     if (input.ExpressionAttributeValues) {
-        t.is(input.ExpressionAttributeValues[`:${params.hashKey.name}`].N, params.hashKey.value.toString());
-        params.rangeKey && t.is(input.ExpressionAttributeValues[`:${params.rangeKey.name}`].S, params.rangeKey.value.toString());
+        t.is(input.ExpressionAttributeValues[`:${params.hashKey.name}`], params.hashKey.value as any);
+        params.rangeKey && t.is(input.ExpressionAttributeValues[`:${params.rangeKey.name}`], params.rangeKey.value as any);
     }
     
     t.truthy(input.ExclusiveStartKey);
     if (input.ExclusiveStartKey && params.startKey) {
-        t.is(input.ExclusiveStartKey['year'].N, params.startKey.year.toString());
-        t.is(input.ExclusiveStartKey['title'].S, params.startKey.title);
+        t.is(input.ExclusiveStartKey['year'], params.startKey.year as any);
+        t.is(input.ExclusiveStartKey['title'], params.startKey.title);
     }
 });

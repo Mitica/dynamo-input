@@ -12,7 +12,7 @@ export interface GetItemParams {
 }
 
 export function getItemInput(params: GetItemParams): DynamoDB.GetItemInput {
-    const Key = DynamoDB.Converter.marshall(params.key);
+    const Key = params.key as any;
     const TableName = params.tableName;
 
     const input: DynamoDB.GetItemInput = {
@@ -38,7 +38,7 @@ export interface BatchGetItemParams {
 
 export function batchGetItemInput(params: BatchGetItemParams): DynamoDB.BatchGetItemInput {
     const KeysAndAttributes: DynamoDB.KeysAndAttributes = {
-        Keys: params.keys.map(key => DynamoDB.Converter.marshall(key)),
+        Keys: params.keys as any[],
     }
 
     const RequestItems: DynamoDB.BatchGetRequestMap = {};
@@ -63,7 +63,7 @@ export interface DeleteItemParams {
 }
 
 export function deleteItemInput(params: DeleteItemParams): DynamoDB.DeleteItemInput {
-    const Key = DynamoDB.Converter.marshall(params.key);
+    const Key = params.key as any;
     const TableName = params.tableName;
 
     const input: DynamoDB.DeleteItemInput = {
@@ -81,7 +81,7 @@ export interface PutItemParams {
 
 export function putItemInput(params: PutItemParams): DynamoDB.PutItemInput {
     const TableName = params.tableName;
-    const Item = DynamoDB.Converter.marshall(params.item);
+    const Item = params.item;
 
     const input: DynamoDB.PutItemInput = {
         Item,
@@ -101,7 +101,7 @@ export interface CreateItemParams {
 export function createItemInput(params: CreateItemParams): DynamoDB.PutItemInput {
     const TableName = params.tableName;
     const key = getKeyFromItem<Key>(params.item, params.hashKeyName, params.rangeKeyName);
-    const Item = DynamoDB.Converter.marshall(params.item);
+    const Item = params.item;
 
     const input: DynamoDB.PutItemInput = {
         Item,
@@ -122,7 +122,7 @@ export function createItemInput(params: CreateItemParams): DynamoDB.PutItemInput
 
     input.ConditionExpression = conditionExpression.expression;
     input.ExpressionAttributeNames = conditionExpression.names;
-    input.ExpressionAttributeValues = DynamoDB.Converter.marshall(conditionExpression.values);
+    input.ExpressionAttributeValues = conditionExpression.values;
 
     return input;
 }
@@ -136,7 +136,7 @@ export function updateItemInput(params: UpdateItemParams): DynamoDB.UpdateItemIn
     const TableName = params.tableName;
 
     const input: DynamoDB.UpdateItemInput = {
-        Key: DynamoDB.Converter.marshall(params.key),
+        Key: params.key as any,
         TableName,
     };
 
@@ -144,7 +144,7 @@ export function updateItemInput(params: UpdateItemParams): DynamoDB.UpdateItemIn
 
     input.UpdateExpression = updateExpression.expression;
     input.ExpressionAttributeNames = updateExpression.names;
-    input.ExpressionAttributeValues = DynamoDB.Converter.marshall(updateExpression.values);
+    input.ExpressionAttributeValues = updateExpression.values;
 
     return input;
 }
