@@ -12,35 +12,37 @@ export function buildUpdateExpression(params: UpdateExpressionParams): UpdateExp
 
     if (params.delete) {
         for (const name of Object.keys(params.delete)) {
-            const varName = setExpressionNameValue(nameValues, name, params.delete[name]);
-            DELETE.push(`#${varName} :${varName}`);
+            const nameVar = setExpressionNameValue(nameValues, name, params.delete[name]);
+            DELETE.push(`#${nameVar} :${nameVar}`);
         }
     }
 
     if (params.remove) {
         for (const name of params.remove) {
-            const varName = formatExpressionVariableName(name);
-            REMOVE.push(varName);
+            const nameVar = formatExpressionVariableName(name);
+            nameValues.names['#' + nameVar] = nameVar;
+            REMOVE.push('#' + nameVar);
         }
     }
 
     if (params.set) {
         for (const name of Object.keys(params.set)) {
             const nameVar = formatExpressionVariableName(name);
-            const nameValue = buildOperandExpressionValue(nameVar, nameValues, params.set[name]);
+            nameValues.names['#' + nameVar] = nameVar;
+            const nameValue = buildExpressionValue(nameVar, nameValues, params.set[name]);
             SET.push(`#${nameVar} = ${nameValue}`);
         }
     }
 
     const expressions: string[] = [];
     if (SET.length) {
-        expressions.push(`SET ${SET.join(',')}`);
+        expressions.push(`SET ${SET.join(', ')}`);
     }
     if (REMOVE.length) {
-        expressions.push(`REMOVE ${REMOVE.join(',')}`);
+        expressions.push(`REMOVE ${REMOVE.join(', ')}`);
     }
     if (DELETE.length) {
-        expressions.push(`DELETE ${REMOVE.join(',')}`);
+        expressions.push(`DELETE ${DELETE.join(', ')}`);
     }
 
     const expression = expressions.join(' ');
@@ -52,7 +54,7 @@ export function buildUpdateExpression(params: UpdateExpressionParams): UpdateExp
     };
 }
 
-export function buildOperandExpressionValue(nameVar: string, nameValues: ExpressionNamesValues, set: UpdateExpressionSet) {
+export function buildExpressionValue(nameVar: string, nameValues: ExpressionNamesValues, set: UpdateExpressionSet) {
     let expression = '';
 
     // Name = 1
@@ -73,17 +75,17 @@ export function buildOperandExpressionValue(nameVar: string, nameValues: Express
     }
     // Names = list_append(Names, :values)
     else if (set.list_append) {
-        const list1ExpressionValue = buildOperandExpressionValue(nameVar + '_list1', nameValues, set.list_append.left);
-        const list2ExpressionValue = buildOperandExpressionValue(nameVar + '_list2', nameValues, set.list_append.right);
+        const list1ExpressionValue = buildExpressionValue(nameVar + '_lst_ppnd1', nameValues, set.list_append.left);
+        const list2ExpressionValue = buildExpressionValue(nameVar + '_lst_ppnd2', nameValues, set.list_append.right);
 
         expression = `list_append(${list1ExpressionValue}, ${list2ExpressionValue})`;
     }
     // Rating = Rating - 1
     else if (set.math) {
-        const leftExpressionValue = buildOperandExpressionValue(nameVar + '_v1', nameValues, set.math.left);
-        const rightExpressionValue = buildOperandExpressionValue(nameVar + '_v1', nameValues, set.math.right);
+        const leftExpressionValue = buildExpressionValue(nameVar + '_mth1', nameValues, set.math.left);
+        const rightExpressionValue = buildExpressionValue(nameVar + '_mth2', nameValues, set.math.right);
 
-        expression = `${leftExpressionValue} ${set.math.operation} ${rightExpressionValue}`;
+        expression = `${leftExpressionValue} ${set.math.operator} ${rightExpressionValue}`;
     } else {
         throw new Error(`Invalid UpdateExpressionSetOperand: ${set}`);
     }
@@ -100,7 +102,7 @@ export type UpdateExpressionInfo = {
 export interface UpdateExpressionParams {
     set?: { [key: string]: UpdateExpressionSet }
     remove?: string[]
-    delete?: { [key: string]: any }
+    delete?: { [key: string]: any[] }
 }
 
 export type UpdateExpressionSet = {
@@ -115,7 +117,7 @@ export type UpdateExpressionSet = {
         right: UpdateExpressionSet
     }
     math?: {
-        operation: '-' | '+'
+        operator: '-' | '+'
         left: UpdateExpressionSet
         right: UpdateExpressionSet
     }
