@@ -15,6 +15,10 @@ export {
 } from './item';
 
 export {
+    UpdateExpressionSet,
+} from './update-expression';
+
+export {
     queryInput,
     QueryParams,
 } from './query';
