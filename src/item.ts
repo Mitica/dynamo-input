@@ -11,11 +11,11 @@ export interface GetItemParams {
     attributes?: string[]
 }
 
-export function getItemInput(params: GetItemParams): DynamoDB.GetItemInput {
-    const Key = params.key as any;
+export function getItemInput(params: GetItemParams): DynamoDB.DocumentClient.GetItemInput {
+    const Key = params.key;
     const TableName = params.tableName;
 
-    const input: DynamoDB.GetItemInput = {
+    const input: DynamoDB.DocumentClient.GetItemInput = {
         Key,
         TableName,
     };
@@ -36,15 +36,15 @@ export interface BatchGetItemParams {
     attributes?: string[]
 }
 
-export function batchGetItemInput(params: BatchGetItemParams): DynamoDB.BatchGetItemInput {
-    const KeysAndAttributes: DynamoDB.KeysAndAttributes = {
-        Keys: params.keys as any[],
+export function batchGetItemInput(params: BatchGetItemParams): DynamoDB.DocumentClient.BatchGetItemInput {
+    const KeysAndAttributes: DynamoDB.DocumentClient.KeysAndAttributes = {
+        Keys: params.keys,
     }
 
-    const RequestItems: DynamoDB.BatchGetRequestMap = {};
+    const RequestItems: DynamoDB.DocumentClient.BatchGetRequestMap = {};
     RequestItems[params.tableName] = KeysAndAttributes;
 
-    const input: DynamoDB.BatchGetItemInput = {
+    const input: DynamoDB.DocumentClient.BatchGetItemInput = {
         RequestItems,
     };
 
@@ -62,11 +62,11 @@ export interface DeleteItemParams {
     key: { [key: string]: string | number }
 }
 
-export function deleteItemInput(params: DeleteItemParams): DynamoDB.DeleteItemInput {
-    const Key = params.key as any;
+export function deleteItemInput(params: DeleteItemParams): DynamoDB.DocumentClient.DeleteItemInput {
+    const Key = params.key;
     const TableName = params.tableName;
 
-    const input: DynamoDB.DeleteItemInput = {
+    const input: DynamoDB.DocumentClient.DeleteItemInput = {
         Key,
         TableName,
     };
@@ -79,11 +79,11 @@ export interface PutItemParams {
     item: { [key: string]: any }
 }
 
-export function putItemInput(params: PutItemParams): DynamoDB.PutItemInput {
+export function putItemInput(params: PutItemParams): DynamoDB.DocumentClient.PutItemInput {
     const TableName = params.tableName;
     const Item = params.item;
 
-    const input: DynamoDB.PutItemInput = {
+    const input: DynamoDB.DocumentClient.PutItemInput = {
         Item,
         TableName,
     };
@@ -98,12 +98,12 @@ export interface CreateItemParams {
     rangeKeyName?: string
 }
 
-export function createItemInput(params: CreateItemParams): DynamoDB.PutItemInput {
+export function createItemInput(params: CreateItemParams): DynamoDB.DocumentClient.PutItemInput {
     const TableName = params.tableName;
     const key = getKeyFromItem<Key>(params.item, params.hashKeyName, params.rangeKeyName);
     const Item = params.item;
 
-    const input: DynamoDB.PutItemInput = {
+    const input: DynamoDB.DocumentClient.PutItemInput = {
         Item,
         TableName,
     };
@@ -132,11 +132,11 @@ export interface UpdateItemParams extends UpdateExpressionParams {
     key: Key
 }
 
-export function updateItemInput(params: UpdateItemParams): DynamoDB.UpdateItemInput {
+export function updateItemInput(params: UpdateItemParams): DynamoDB.DocumentClient.UpdateItemInput {
     const TableName = params.tableName;
 
-    const input: DynamoDB.UpdateItemInput = {
-        Key: params.key as any,
+    const input: DynamoDB.DocumentClient.UpdateItemInput = {
+        Key: params.key,
         TableName,
     };
 

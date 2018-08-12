@@ -1,9 +1,9 @@
 
 import DynamoDB = require('aws-sdk/clients/dynamodb');
 
-export function queryInput(params: QueryParams): DynamoDB.QueryInput {
+export function queryInput(params: QueryParams): DynamoDB.DocumentClient.QueryInput {
 
-    const input: DynamoDB.QueryInput = {
+    const input: DynamoDB.DocumentClient.QueryInput = {
         TableName: params.tableName,
         IndexName: params.index,
         Limit: params.limit,
@@ -19,7 +19,7 @@ export function queryInput(params: QueryParams): DynamoDB.QueryInput {
         input.ExclusiveStartKey = params.startKey;
     }
 
-    const ExpressionAttributeNames: DynamoDB.ExpressionAttributeNameMap = {};
+    const ExpressionAttributeNames: DynamoDB.DocumentClient.ExpressionAttributeNameMap = {};
     ExpressionAttributeNames[`#${params.hashKey.name}`] = params.hashKey.name;
 
     const ExpressionAttributeValues: { [key: string]: any } = {};

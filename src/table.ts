@@ -2,14 +2,14 @@
 import DynamoDB = require('aws-sdk/clients/dynamodb');
 import { uniqByProperty } from "./helpers";
 
-export function createTableInput(table: TableParams): DynamoDB.CreateTableInput {
-    let AttributeDefinitions: DynamoDB.AttributeDefinitions = [
+export function createTableInput(table: TableParams): DynamoDB.DocumentClient.CreateTableInput {
+    let AttributeDefinitions: DynamoDB.DocumentClient.AttributeDefinitions = [
         {
             AttributeName: table.hashKey.name,
             AttributeType: table.hashKey.type,
         }
     ];
-    const KeySchema: DynamoDB.KeySchema = [
+    const KeySchema: DynamoDB.DocumentClient.KeySchema = [
         {
             AttributeName: table.hashKey.name,
             KeyType: 'HASH',
@@ -27,16 +27,16 @@ export function createTableInput(table: TableParams): DynamoDB.CreateTableInput 
         });
     }
 
-    const LocalSecondaryIndexes: DynamoDB.LocalSecondaryIndexList = [];
-    const GlobalSecondaryIndexes: DynamoDB.GlobalSecondaryIndexList = [];
+    const LocalSecondaryIndexes: DynamoDB.DocumentClient.LocalSecondaryIndexList = [];
+    const GlobalSecondaryIndexes: DynamoDB.DocumentClient.GlobalSecondaryIndexList = [];
 
     if (table.indexes) {
         for (const indexInfo of table.indexes) {
             const index = formatIndex(indexInfo);
             if (indexInfo.type === 'GLOBAL') {
-                GlobalSecondaryIndexes.push(index as DynamoDB.GlobalSecondaryIndex);
+                GlobalSecondaryIndexes.push(index as DynamoDB.DocumentClient.GlobalSecondaryIndex);
             } else {
-                LocalSecondaryIndexes.push(index as DynamoDB.LocalSecondaryIndex);
+                LocalSecondaryIndexes.push(index as DynamoDB.DocumentClient.LocalSecondaryIndex);
             }
 
             AttributeDefinitions.push({
@@ -66,8 +66,8 @@ export function createTableInput(table: TableParams): DynamoDB.CreateTableInput 
     };
 }
 
-export function formatIndex(index: IndexParams): DynamoDB.GlobalSecondaryIndex | DynamoDB.LocalSecondaryIndex {
-    const KeySchema: DynamoDB.KeySchema = [
+export function formatIndex(index: IndexParams): DynamoDB.DocumentClient.GlobalSecondaryIndex | DynamoDB.DocumentClient.LocalSecondaryIndex {
+    const KeySchema: DynamoDB.DocumentClient.KeySchema = [
         {
             AttributeName: index.hashKey.name,
             KeyType: 'HASH',
@@ -82,7 +82,7 @@ export function formatIndex(index: IndexParams): DynamoDB.GlobalSecondaryIndex |
 
     const projection = index.projection || { type: 'KEYS_ONLY' };
 
-    const Projection: DynamoDB.Projection = {
+    const Projection: DynamoDB.DocumentClient.Projection = {
         ProjectionType: projection.type
     };
 
@@ -98,17 +98,17 @@ export function formatIndex(index: IndexParams): DynamoDB.GlobalSecondaryIndex |
             KeySchema,
             Projection,
             ProvisionedThroughput: createProvisionedThroughput(index.throughput),
-        } as DynamoDB.GlobalSecondaryIndex;
+        } as DynamoDB.DocumentClient.GlobalSecondaryIndex;
     }
 
     return {
         IndexName: index.name,
         KeySchema,
         Projection,
-    } as DynamoDB.LocalSecondaryIndex;
+    } as DynamoDB.DocumentClient.LocalSecondaryIndex;
 }
 
-function createProvisionedThroughput(provisionedThroughput?: ProvisionedThroughput): DynamoDB.ProvisionedThroughput {
+function createProvisionedThroughput(provisionedThroughput?: ProvisionedThroughput): DynamoDB.DocumentClient.ProvisionedThroughput {
     provisionedThroughput = provisionedThroughput || {
         read: 1,
         write: 1,
