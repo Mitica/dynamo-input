@@ -9,6 +9,8 @@ import {
     GetItemParams,
     putItemInput,
     PutItemParams,
+    UpdateItemParams,
+    updateItemInput,
 } from './item';
 
 test('putItemInput', t => {
@@ -84,5 +86,34 @@ test('deleteItemInput', t => {
 
     t.is(input.TableName, params.tableName);
     t.is(input.Key['id'], params.key.id as any);
+    t.is(input.ReturnValues, undefined);
+});
+
+test('updateItem', t => {
+    let params: UpdateItemParams = {
+        tableName: 'Movies',
+        key: {
+            id: 1
+        },
+        set: {
+            title: {
+                value: 'New title'
+            }
+        }
+    };
+
+    let input = updateItemInput(params);
+
+    t.is(input.TableName, params.tableName);
+    t.is(input.Key['id'], params.key.id as any);
+    t.is(input.UpdateExpression, 'SET #title = :title');
+    t.truthy(input.ExpressionAttributeNames);
+    if (input.ExpressionAttributeNames) {
+        t.is(input.ExpressionAttributeNames['#title'], 'title');
+    }
+    t.truthy(input.ExpressionAttributeValues);
+    if (input.ExpressionAttributeValues) {
+        t.is(input.ExpressionAttributeValues[':title'], 'New title');
+    }
     t.is(input.ReturnValues, undefined);
 });
