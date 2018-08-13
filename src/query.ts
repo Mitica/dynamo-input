@@ -9,6 +9,7 @@ export function queryInput(params: QueryParams): DynamoDB.DocumentClient.QueryIn
         Limit: params.limit,
         Select: params.select,
         ConsistentRead: params.consistentRead,
+        ScanIndexForward: params.order !== 'DESC',
     };
 
     if (params.attributes) {
@@ -92,6 +93,7 @@ export interface QueryParams {
     // KeyConditionExpression?: DynamoDB.KeyExpression;
     // ExpressionAttributeNames?: DynamoDB.ExpressionAttributeNameMap;
     // ExpressionAttributeValues?: DynamoDB.ExpressionAttributeValueMap;
+    order?: 'ASC' | 'DESC'
 }
 
 export type QueryRangeKey = {
