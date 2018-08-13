@@ -136,21 +136,50 @@ export function createItemInput(params: CreateItemParams): DynamoDB.DocumentClie
 export interface UpdateItemParams extends UpdateExpressionParams {
     tableName: string
     key: Key
+    hashKeyName: string
 }
 
 export function updateItemInput(params: UpdateItemParams): DynamoDB.DocumentClient.UpdateItemInput {
     const TableName = params.tableName;
+    const key = params.key;
 
     const input: DynamoDB.DocumentClient.UpdateItemInput = {
-        Key: params.key,
+        Key: key,
         TableName,
     };
 
-    const { expression, names, values } = buildUpdateExpression(params);
+    const keyProps = Object.keys(key);
+
+    if (keyProps.length > 2) {
+        throw new TypeError(`key must contain maximum 2 props: hash & range`);
+    }
+
+    const rangeKeyName = keyProps.length === 2 ? keyProps.find(name => name !== params.hashKeyName) : undefined;
+
+    let { expression, names, values } = buildConditionExpression({
+        operation: '=',
+        hashKey: {
+            name: params.hashKeyName,
+            value: key[params.hashKeyName],
+        },
+        rangeKey: rangeKeyName && {
+            name: rangeKeyName,
+            value: key[rangeKeyName],
+        } || undefined,
+    });
 
     if (expression) {
-        input.UpdateExpression = expression;
+        input.ConditionExpression = expression;
     }
+
+    const update = buildUpdateExpression(params);
+
+    if (update.expression) {
+        input.UpdateExpression = update.expression;
+    }
+    names = { ...names, ...update.names };
+    values = { ...values, ...update.values };
+
     if (Object.keys(names).length) {
         input.ExpressionAttributeNames = names;
     }

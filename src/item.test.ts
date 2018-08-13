@@ -92,6 +92,7 @@ test('deleteItemInput', t => {
 test('updateItem', t => {
     let params: UpdateItemParams = {
         tableName: 'Movies',
+        hashKeyName: 'id',
         key: {
             id: 1
         },
@@ -106,13 +107,16 @@ test('updateItem', t => {
 
     t.is(input.TableName, params.tableName);
     t.is(input.Key['id'], params.key.id as any);
+    t.is(input.ConditionExpression, '#id = :id');
     t.is(input.UpdateExpression, 'SET #title = :title');
     t.truthy(input.ExpressionAttributeNames);
     if (input.ExpressionAttributeNames) {
+        t.is(input.ExpressionAttributeNames['#id'], 'id');
         t.is(input.ExpressionAttributeNames['#title'], 'title');
     }
     t.truthy(input.ExpressionAttributeValues);
     if (input.ExpressionAttributeValues) {
+        t.is(input.ExpressionAttributeValues[':id'], 1);
         t.is(input.ExpressionAttributeValues[':title'], 'New title');
     }
     t.is(input.ReturnValues, undefined);
