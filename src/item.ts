@@ -20,7 +20,7 @@ export function getItemInput(params: GetItemParams): DynamoDB.DocumentClient.Get
         TableName,
     };
 
-    if (!params.attributes) {
+    if (!params.attributes || params.attributes.length === 0) {
         return input;
     }
 
@@ -48,7 +48,7 @@ export function batchGetItemInput(params: BatchGetItemParams): DynamoDB.Document
         RequestItems,
     };
 
-    if (params.attributes) {
+    if (params.attributes && params.attributes.length) {
         const ProjectionExpression = params.attributes.join(',');
 
         KeysAndAttributes.ProjectionExpression = ProjectionExpression;
@@ -108,7 +108,7 @@ export function createItemInput(params: CreateItemParams): DynamoDB.DocumentClie
         TableName,
     };
 
-    const conditionExpression = buildConditionExpression({
+    const { expression, names, values } = buildConditionExpression({
         operation: '<>',
         hashKey: {
             name: params.hashKeyName,
@@ -120,9 +120,15 @@ export function createItemInput(params: CreateItemParams): DynamoDB.DocumentClie
         } || undefined,
     });
 
-    input.ConditionExpression = conditionExpression.expression;
-    input.ExpressionAttributeNames = conditionExpression.names;
-    input.ExpressionAttributeValues = conditionExpression.values;
+    if (expression) {
+        input.ConditionExpression = expression;
+    }
+    if (Object.keys(names).length) {
+        input.ExpressionAttributeNames = names;
+    }
+    if (Object.keys(values).length) {
+        input.ExpressionAttributeValues = values;
+    }
 
     return input;
 }
@@ -140,11 +146,17 @@ export function updateItemInput(params: UpdateItemParams): DynamoDB.DocumentClie
         TableName,
     };
 
-    const updateExpression = buildUpdateExpression(params);
+    const { expression, names, values } = buildUpdateExpression(params);
 
-    input.UpdateExpression = updateExpression.expression;
-    input.ExpressionAttributeNames = updateExpression.names;
-    input.ExpressionAttributeValues = updateExpression.values;
+    if (expression) {
+        input.UpdateExpression = expression;
+    }
+    if (Object.keys(names).length) {
+        input.ExpressionAttributeNames = names;
+    }
+    if (Object.keys(values).length) {
+        input.ExpressionAttributeValues = values;
+    }
 
     return input;
 }
