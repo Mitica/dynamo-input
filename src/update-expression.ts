@@ -1,36 +1,37 @@
-import { ExpressionNamesValues, formatExpressionVariableName, setExpressionNameValue } from "./expression";
+import {
+    setExpressionNameValue,
+    formatExpressionAttributeNameKeys,
+    ExpressionNames,
+    ExpressionValues,
+} from "./expression";
 
 export function buildUpdateExpression(params: UpdateExpressionParams): UpdateExpressionInfo {
     let SET: string[] = [];
     let DELETE: string[] = [];
     let REMOVE: string[] = [];
 
-    const nameValues: ExpressionNamesValues = {
-        names: {},
-        values: {},
-    };
+    const names: ExpressionNames = {};
+    const values: ExpressionValues = {};
 
     if (params.delete) {
         for (const name of Object.keys(params.delete)) {
-            const nameVar = setExpressionNameValue(nameValues, name, params.delete[name]);
-            DELETE.push(`#${nameVar} :${nameVar}`);
+            const nameVar = formatExpressionAttributeNameKeys(name, names);
+            const valueVar = setExpressionNameValue(values, name, params.delete[name]);
+            DELETE.push(`${nameVar} ${valueVar}`);
         }
     }
 
     if (params.remove) {
         for (const name of params.remove) {
-            const nameVar = formatExpressionVariableName(name);
-            nameValues.names['#' + nameVar] = nameVar;
-            REMOVE.push('#' + nameVar);
+            REMOVE.push(formatExpressionAttributeNameKeys(name, names));
         }
     }
 
     if (params.set) {
         for (const name of Object.keys(params.set)) {
-            const nameVar = formatExpressionVariableName(name);
-            nameValues.names['#' + nameVar] = nameVar;
-            const nameValue = buildExpressionValue(nameVar, nameValues, params.set[name]);
-            SET.push(`#${nameVar} = ${nameValue}`);
+            const nameVar = formatExpressionAttributeNameKeys(name, names);
+            const valueVar = buildExpressionValue(name, names, values, params.set[name]);
+            SET.push(`${nameVar} = ${valueVar}`);
         }
     }
 
@@ -49,41 +50,39 @@ export function buildUpdateExpression(params: UpdateExpressionParams): UpdateExp
 
     return {
         expression,
-        names: nameValues.names,
-        values: nameValues.values,
+        names,
+        values,
     };
 }
 
-export function buildExpressionValue(nameVar: string, nameValues: ExpressionNamesValues, set: UpdateExpressionSet) {
+export function buildExpressionValue(name: string, names: ExpressionNames, values: ExpressionValues, set: UpdateExpressionSet, valueNameSuffix: string = '') {
     let expression = '';
 
     // Name = 1
     if (set.value !== undefined) {
-        nameValues.values[':' + nameVar] = set.value;
-        expression = `:${nameVar}`;
+        expression = setExpressionNameValue(values, name + valueNameSuffix, set.value);
     }
     // Name = FirstName
     else if (set.path) {
-        const pathVar = formatExpressionVariableName(set.path);
-        nameValues.names['#' + pathVar] = set.path;
-        expression = `#${pathVar}`;
+        expression = formatExpressionAttributeNameKeys(set.path, names);
     }
     // Name = if_not_exists(Name, :value)
     else if (set.if_not_exists) {
-        const pathVar = setExpressionNameValue(nameValues, set.if_not_exists.path, set.if_not_exists.value);
-        expression = `if_not_exists(#${pathVar}, :${pathVar})`;
+        const pathName = formatExpressionAttributeNameKeys(set.if_not_exists.path, names);
+        const pathVar = setExpressionNameValue(values, set.if_not_exists.path + valueNameSuffix, set.if_not_exists.value);
+        expression = `if_not_exists(${pathName}, ${pathVar})`;
     }
     // Names = list_append(Names, :values)
     else if (set.list_append) {
-        const list1ExpressionValue = buildExpressionValue(nameVar + '_lst_ppnd1', nameValues, set.list_append.left);
-        const list2ExpressionValue = buildExpressionValue(nameVar + '_lst_ppnd2', nameValues, set.list_append.right);
+        const list1ExpressionValue = buildExpressionValue(name, names, values, set.list_append.left, valueNameSuffix + '_lst_ppnd1');
+        const list2ExpressionValue = buildExpressionValue(name, names, values, set.list_append.right, valueNameSuffix + '_lst_ppnd2');
 
         expression = `list_append(${list1ExpressionValue}, ${list2ExpressionValue})`;
     }
     // Rating = Rating - 1
     else if (set.math) {
-        const leftExpressionValue = buildExpressionValue(nameVar + '_mth1', nameValues, set.math.left);
-        const rightExpressionValue = buildExpressionValue(nameVar + '_mth2', nameValues, set.math.right);
+        const leftExpressionValue = buildExpressionValue(name, names, values, set.math.left, valueNameSuffix + '_mth1');
+        const rightExpressionValue = buildExpressionValue(name, names, values, set.math.right, valueNameSuffix + '_mth2');
 
         expression = `${leftExpressionValue} ${set.math.operator} ${rightExpressionValue}`;
     } else {

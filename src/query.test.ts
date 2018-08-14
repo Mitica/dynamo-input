@@ -60,7 +60,7 @@ test('rangeKey queryInput', t => {
 
     t.is(input.TableName, params.tableName);
     t.is(input.IndexName, params.index);
-    t.is(input.ProjectionExpression, 'id,title');
+    t.is(input.ProjectionExpression, '#id,#title');
     t.is(input.Select, params.select);
     t.is(input.Limit, params.limit);
     t.is(input.ConsistentRead, params.consistentRead);

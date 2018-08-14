@@ -99,37 +99,41 @@ test('buildUpdateExpression SET if_not_exists', t => {
 })
 
 test('buildExpressionValue#value', t => {
-    const namesValues = { names: {}, values: {} };
-    const result = buildExpressionValue('id', namesValues, { value: 1 });
+    const names = {};
+    const values = {};
+    const result = buildExpressionValue('id', names, values, { value: 1 });
     t.is(result, ':id');
-    t.deepEqual(namesValues.names, {});
-    t.deepEqual(namesValues.values, { ':id': 1 });
+    t.deepEqual(names, {});
+    t.deepEqual(values, { ':id': 1 });
 })
 
 test('buildExpressionValue#path', t => {
-    const namesValues = { names: {}, values: {} };
-    const result = buildExpressionValue('id', namesValues, { path: 'OldId' });
+    const names = {};
+    const values = {};
+    const result = buildExpressionValue('id', names, values, { path: 'OldId' });
     t.is(result, '#OldId');
-    t.deepEqual(namesValues.names, { '#OldId': 'OldId' });
-    t.deepEqual(namesValues.values, {});
+    t.deepEqual(names, { '#OldId': 'OldId' });
+    t.deepEqual(values, {});
 })
 
 test('buildExpressionValue#if_not_exists', t => {
-    const namesValues = { names: {}, values: {} };
-    const result = buildExpressionValue('id', namesValues, {
+    const names = {};
+    const values = {};
+    const result = buildExpressionValue('id', names, values, {
         if_not_exists: {
             path: 'OldId',
             value: 2
         }
     });
     t.is(result, 'if_not_exists(#OldId, :OldId)');
-    t.deepEqual(namesValues.names, { '#OldId': 'OldId' });
-    t.deepEqual(namesValues.values, { ':OldId': 2 });
+    t.deepEqual(names, { '#OldId': 'OldId' });
+    t.deepEqual(values, { ':OldId': 2 });
 })
 
 test('buildExpressionValue#list_append', t => {
-    const namesValues = { names: {}, values: {} };
-    const result = buildExpressionValue('Tags', namesValues, {
+    const names = {};
+    const values = {};
+    const result = buildExpressionValue('Tags', names, values, {
         list_append: {
             left: {
                 path: 'Tags'
@@ -140,13 +144,14 @@ test('buildExpressionValue#list_append', t => {
         }
     });
     t.is(result, 'list_append(#Tags, :Tags_lst_ppnd2)');
-    t.deepEqual(namesValues.names, { '#Tags': 'Tags' });
-    t.deepEqual(namesValues.values, { ':Tags_lst_ppnd2': ['new'] });
+    t.deepEqual(names, { '#Tags': 'Tags' });
+    t.deepEqual(values, { ':Tags_lst_ppnd2': ['new'] });
 })
 
 test('buildExpressionValue#math', t => {
-    const namesValues = { names: {}, values: {} };
-    const result = buildExpressionValue('counter', namesValues, {
+    const names = {};
+    const values = {};
+    const result = buildExpressionValue('counter', names, values, {
         math: {
             operator: '+',
             left: {
@@ -160,7 +165,7 @@ test('buildExpressionValue#math', t => {
             }
         }
     });
-    t.is(result, 'if_not_exists(#counter, :counter) + :counter_mth2');
-    t.deepEqual(namesValues.names, { '#counter': 'counter' });
-    t.deepEqual(namesValues.values, { ':counter': 0, ':counter_mth2': 1 });
+    t.is(result, 'if_not_exists(#counter, :counter_mth1) + :counter_mth2');
+    t.deepEqual(names, { '#counter': 'counter' });
+    t.deepEqual(values, { ':counter_mth1': 0, ':counter_mth2': 1 });
 })

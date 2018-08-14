@@ -1,4 +1,8 @@
-import { ExpressionNamesValues, setExpressionNameValue } from "./expression";
+import {
+    ExpressionNamesValues,
+    formatExpressionAttributeNameKeys,
+    setExpressionNameValue,
+} from "./expression";
 
 export function buildConditionExpression(params: ConditionExpressionParams): ConditionExpressionInfo {
 
@@ -7,14 +11,16 @@ export function buildConditionExpression(params: ConditionExpressionParams): Con
         values: {},
     };
 
-    const hashKeyNameVar = setExpressionNameValue(nameValues, params.hashKey.name, params.hashKey.value);
+    const hashKeyNameVar = formatExpressionAttributeNameKeys(params.hashKey.name, nameValues.names);
+    const hashKeyValueVar = setExpressionNameValue(nameValues.values, params.hashKey.name, params.hashKey.value);
 
-    let expression = `#${hashKeyNameVar} ${params.operation} :${hashKeyNameVar}`;
+    let expression = `${hashKeyNameVar} ${params.operation} ${hashKeyValueVar}`;
 
     if (params.rangeKey) {
-        const rangeKeyNameVar = setExpressionNameValue(nameValues, params.rangeKey.name, params.rangeKey.value);
+        const rangeKeyNameVar = formatExpressionAttributeNameKeys(params.rangeKey.name, nameValues.names);
+        const rangeKeyValueVar = setExpressionNameValue(nameValues.values, params.rangeKey.name, params.rangeKey.value);
 
-        expression += ` AND #${rangeKeyNameVar} ${params.operation} :${rangeKeyNameVar}`;
+        expression += ` AND ${rangeKeyNameVar} ${params.operation} ${rangeKeyValueVar}`;
     }
 
     return {
@@ -40,42 +46,3 @@ export type ConditionExpressionKey = {
     name: string
     value: string | number
 }
-
-// abstract class Expression {
-//     protected children: Expression[] = []
-//     protected addChild(child: Expression) {
-//         this.children.push(child);
-//     }
-//     abstract toString(): string
-// }
-
-// type LogicalOperator = 'AND' | 'OR';
-// class OperatorExpression extends Expression {
-//     constructor(private operator: LogicalOperator) {
-//         super();
-//     }
-
-//     toString() {
-//         return `${this.operator}`;
-//     }
-// }
-
-// class AttributeExpression extends Expression {
-//     constructor(private name: string) {
-//         super();
-//     }
-
-//     and() {
-//         const child = new OperatorExpression('AND');
-
-//         this.addChild(child);
-
-//         return child;
-//     }
-
-//     eq()
-
-//     toString() {
-//         return `(${this.name} ${this.children})`;
-//     }
-// }

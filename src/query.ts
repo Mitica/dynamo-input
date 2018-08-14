@@ -1,5 +1,6 @@
 
 import DynamoDB = require('aws-sdk/clients/dynamodb');
+import { buildProjectionExpression } from './expression';
 
 export function queryInput(params: QueryParams): DynamoDB.DocumentClient.QueryInput {
 
@@ -11,10 +12,6 @@ export function queryInput(params: QueryParams): DynamoDB.DocumentClient.QueryIn
         ConsistentRead: params.consistentRead,
         ScanIndexForward: params.order !== 'DESC',
     };
-
-    if (params.attributes) {
-        input.ProjectionExpression = params.attributes.join(',');
-    }
 
     if (params.startKey) {
         input.ExclusiveStartKey = params.startKey;
@@ -63,6 +60,11 @@ export function queryInput(params: QueryParams): DynamoDB.DocumentClient.QueryIn
         }
 
         KeyConditionExpression += ` AND ${expression}`;
+    }
+
+    if (params.attributes && params.attributes.length) {
+        const projection = buildProjectionExpression(params.attributes, ExpressionAttributeNames);
+        input.ProjectionExpression = projection.expression;
     }
 
     input.ExpressionAttributeNames = ExpressionAttributeNames;

@@ -3,6 +3,7 @@ import DynamoDB = require('aws-sdk/clients/dynamodb');
 import { getKeyFromItem, Key } from './key';
 import { UpdateExpressionParams, buildUpdateExpression } from './update-expression';
 import { buildConditionExpression } from './condition-expression';
+import { buildProjectionExpression } from './expression';
 
 
 export interface GetItemParams {
@@ -24,9 +25,12 @@ export function getItemInput(params: GetItemParams): DynamoDB.DocumentClient.Get
         return input;
     }
 
-    const ProjectionExpression = params.attributes.join(',');
+    const projection = buildProjectionExpression(params.attributes);
 
-    return { ...input, ProjectionExpression };
+    input.ProjectionExpression = projection.expression;
+    input.ExpressionAttributeNames = projection.names;
+
+    return input;
 }
 
 
@@ -49,9 +53,10 @@ export function batchGetItemInput(params: BatchGetItemParams): DynamoDB.Document
     };
 
     if (params.attributes && params.attributes.length) {
-        const ProjectionExpression = params.attributes.join(',');
+        const projection = buildProjectionExpression(params.attributes);
 
-        KeysAndAttributes.ProjectionExpression = ProjectionExpression;
+        KeysAndAttributes.ProjectionExpression = projection.expression;
+        KeysAndAttributes.ExpressionAttributeNames = projection.names;
     }
 
     return input;
